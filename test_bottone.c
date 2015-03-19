@@ -2,39 +2,42 @@
 #include "time.h"
 #include "stdint.h"
 
-#define FALSE 0;
-#define TRUE 1;
+#define FALSE 0
+#define TRUE 1
 
-const uint8_t buttons[] = {19, 25}; // should be digital pin {2, 4}
-const uint8_t lights[] = {18, 36}; // should be digital pin {3, 13}
+const uint8_t buttons[] PROGMEM = {19, 25}; // should be digital pin {2, 4}
+const uint8_t lights[] PROGMEM = {18, 36}; // should be digital pin {3, 13}
+
+const unsigned long timeout PROGMEM = 1000UL * 90;
+const unsigned long timeout_antibump PROGMEM = 100UL; //half seconds
 
 unsigned long last_activated = 0;
 unsigned long antibump = 0;
-unsigned long timeout = 1000UL * 90;
-unsigned long timeout_antibump = 100UL; //half seconds
+
 
 uint8_t is_timeout = FALSE;
 
 void setup();
 void loop();
 void turn_me_on() ;
-void change_outptut(int status) ;
+void change_outptut(uint8_t status) ;
 
 int main(){
     setup();
     while (1){
       loop();
     }
+    return -1;
 }
 
 void setup() {
 
-  for (int i = 0; i < sizeof(buttons); i ++) {
+  for (size_t i = 0; i < sizeof(buttons); i ++) {
     pinMode(buttons[i], INPUT);
     digitalWrite(buttons[i], HIGH);
   }
 
-  for (int i = 0; i < sizeof(lights); i ++) {
+  for (size_t i = 0; i < sizeof(lights); i ++) {
     pinMode(lights[i], OUTPUT);
     digitalWrite(lights[i], LOW);
   }
@@ -46,12 +49,12 @@ void setup() {
 
 void loop() {
   uint8_t light_on = FALSE;
-  for (int i = 0; i < sizeof(lights); i ++) {
+  for (size_t i = 0; i < sizeof(lights); i ++) {
     light_on |= digitalRead(lights[i]);
   }
 
   uint8_t all_inputs_off = TRUE;
-  for (int i = 0; i < sizeof(buttons); i ++) {
+  for (size_t i = 0; i < sizeof(buttons); i ++) {
     if ( digitalRead(buttons[i]) == HIGH ) {
       all_inputs_off = FALSE;
       break;
@@ -96,10 +99,10 @@ void turn_me_on() {
 
 
 
-void change_outptut(int status) {
+void change_outptut(uint8_t status) {
   //Serial.print("changing status to ");
   //Serial.println(status);
-  for (int i = 0; i < sizeof(lights); i ++) {
+	for (size_t i = 0; i < sizeof(lights); i ++) {
     digitalWrite(lights[i], status);
   }
 }

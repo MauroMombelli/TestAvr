@@ -2,7 +2,7 @@
 #include "stdint.h"
 
 
-#define clockCyclesToMicroseconds(a) ( ((a) * 1000L) / (F_CPU / 1000L) )
+#define clockCyclesToMicroseconds(a) ( ((a) * 1000UL) / (F_CPU / 1000UL) )
 #define MICROSECONDS_PER_TIMER0_OVERFLOW (clockCyclesToMicroseconds(64 * 256))
 #define MILLIS_INC (MICROSECONDS_PER_TIMER0_OVERFLOW / 1000)
 // the fractional number of milliseconds per timer0 overflow. we shift right
