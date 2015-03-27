@@ -1,0 +1,46 @@
+Questa è una descrizione di come caricare uno sketch da riga di comando, sfruttando avr-dude e un arduino settato come programmatore.
+
+
+FASE DI SETTAGGIO, DA FARE SOLO UNA VOLTA
+
+fase 1:
+caricaricare lo sketch "ArduinoISP" sull'arduino.
+Lo sketch è all'interno degli esempi "standard" dell'ide. Si consiglia l'uso di Arduino UNO, al momento è la board con maggior supporto.
+
+fase 2:
+collegare il chip da programmare all'arduino UNO secondo il seguente schema (arduino sono i pin DIGITAL):
+
+Arduino		Target
+VCC			VCC
+GND			GND
+10			RESET
+11			MOSI
+12			MISO
+13			SCK
+
+!!! Mettere un condensatore 10uF tra GND e RESET dell'arduino (occhio alla polarità, il - su gnd) !!!
+
+fase 3:
+verificare i valori di FUSE del chip siano quelli desiderati
+avrdude -cstk500v1 -p XXX -U lfuse:r:low_fuse_val.hex:h -U hfuse:r:high_fuse_val.hex:h
+
+dove XXX è la porta USB/Seriale a cui è collegato l'arduino UNO. 
+low_fuse_val.hex e high_fuse_val.hex sono i nomi dei file in cui sarà salvato il valore dei fuse
+
+fase 4: (opzionale)
+calcolare i fuse desiderati. http://www.engbedded.com/fusecalc/ è un pratico calcolatore che non solo permette di selezionare graficamente le opzioni, ma restituisce anche il comando da dare in pasto ad AVR-DUDE
+
+fase 5:
+aprire il file compile.sh e verificare che la flag "mmcu" sia settata per il proprio target "DF_CPU" sia settata al clock del target, modificare "-c XXX.c" nel proprio file .c che contiene il main. Modificare XXX anche nei comandi successivi; compare con estensione .elf, .o e .hex, più di una volta.
+
+fase 6:
+aprire il file upload.sh e modificare "-p" con la architettura target, "-P" con la seriale in cui è collegato ArduinoISP e settare il nome del file hex da caricare XXX in base al nome generato al punto precedente "-Uflash:w:XXX.hex:i"
+
+
+FASE DI COMPILAZIONE
+
+./compile.sh
+
+FASE DI UPLOAD
+
+./upload.sh

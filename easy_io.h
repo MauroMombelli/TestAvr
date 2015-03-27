@@ -2,37 +2,56 @@
 #include <avr/pgmspace.h>
 #include <stdint.h>
 
-#define NULL 0
-
 const uint8_t LOW PROGMEM = 0;
 const uint8_t HIGH PROGMEM = 1;
 
 const uint8_t INPUT PROGMEM = 0;
 const uint8_t OUTPUT PROGMEM = 1;
 
-volatile uint8_t *set_reg[] = {NULL, &DDRB, &DDRC, &DDRD, &DDRE, &DDRF};
-volatile uint8_t *out_reg[] = {NULL, &PORTB, &PORTC, &PORTD, &PORTE, &PORTF};
-volatile uint8_t *in_reg[] = {NULL, &PINB, &PINC, &PIND, &PINE, &PINF};
+#ifndef sbi
+#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+#endif 
 
-void pinMode(uint8_t pin, uint8_t status){
-	uint8_t mask = 1 << (pin % 8);
-	if (status == OUTPUT){
-		*set_reg[pin/8] &= (uint8_t) (~mask);
+#ifndef cbi
+#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
+#endif
+
+#ifndef SET_PIN
+#define SET_PIN(port, bit) {&port, _BV(bit)}
+#endif
+
+
+struct PORT{
+	uint8_t * const status;
+	uint8_t * const input;
+	uint8_t * const output;
+};
+
+#define X(val) const struct PORT val PROGMEM = {&PORT##val, &PIN##val, &DDR##val};
+	#include "ports.h"
+#undef X
+
+struct PIN{
+	const struct PORT *port;
+	const uint8_t mask;
+};
+
+void pinMode(const struct PIN p, uint8_t val){
+	if (val){
+		*(p.port->status) |= p.mask;
 	}else{
-		*set_reg[pin/8] |= (uint8_t) (mask); 
+		*(p.port->status) &= ~p.mask;
 	}
 }
 
-void digitalWrite(uint8_t pin, uint8_t status){
-	uint8_t mask = 1 << (pin % 8);
-	if (status == LOW){
-		*out_reg[pin/8] &= (~mask);
+void digitalWrite(const struct PIN p, uint8_t val){
+	if (val){
+		*(p.port->output) |= p.mask;
 	}else{
-		*out_reg[pin/8] |= mask; 
+		*(p.port->output) &= ~p.mask;
 	}
 }
 
-uint8_t digitalRead(uint8_t pin){
-	uint8_t mask = 1 << (pin % 8);
-	return *in_reg[pin/8] & mask?HIGH: LOW;
+uint8_t digitalRead(const struct PIN p){
+	return *(p.port->input) & p.mask;
 }
